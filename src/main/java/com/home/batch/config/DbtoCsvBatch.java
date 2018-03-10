@@ -21,7 +21,6 @@ import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -31,16 +30,10 @@ import com.home.batch.listeners.DbToCsvStepListener;
 import com.home.batch.mappers.ClaimRowMapper;
 import com.home.batch.model.Claim;
 import com.home.batch.processors.ClaimNoOpProcessor;
-import com.home.batch.writers.ClaimCSVWriter;
 
+
+@EnableBatchProcessing
 @Configuration
-@EnableBatchProcessing // adds batch specific beans that support jobs helps inject JobRepository (bean name “jobRepository”)
-/* 
- * JobLauncher (bean name “jobLauncher”)
- * a JobRegistry (bean name “jobRegistry”)
- * a PlatformTransactionManager (bean name “transactionManager”)
- * a JobBuilderFactory (bean name “jobBuilders”) as a convenience to prevent from having to inject the job repository into every job
- * a StepBuilderFactory*/
 public class DbtoCsvBatch {
 	
 	@Autowired
