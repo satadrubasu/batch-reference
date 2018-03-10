@@ -1,12 +1,20 @@
 package com.home.batch.model;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity
 public class Claim {
-	
-	private int id; // Autoincrement id of the table
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private int id; // Autoincrement id of the table // exclude this from the comma seperated
 	private int claimId;
 	private int insuredId;
 	private int amount;
 	private String patientName;
+	
 	
 	public synchronized int getId() {
 		return id;

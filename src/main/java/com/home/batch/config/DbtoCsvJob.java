@@ -11,6 +11,7 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
@@ -19,9 +20,11 @@ import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
 import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.jdbc.core.RowMapper;
 
 import com.home.batch.listeners.DbToCsvChunkListener;
@@ -30,11 +33,17 @@ import com.home.batch.listeners.DbToCsvStepListener;
 import com.home.batch.mappers.ClaimRowMapper;
 import com.home.batch.model.Claim;
 import com.home.batch.processors.ClaimNoOpProcessor;
+import com.home.batch.writers.ClaimCSVWriter;
 
 
+/**
+ * TODO: check the restartability / file not written
+ * @author cts1
+ *
+ */
 @EnableBatchProcessing
 @Configuration
-public class DbtoCsvBatch {
+public class DbtoCsvJob {
 	
 	@Autowired
 	private JobBuilderFactory jobs;
@@ -50,22 +59,25 @@ public class DbtoCsvBatch {
 	 * @return
 	 */
 	@Bean
+	@Qualifier("dbToCsvJob")
 	public Job dbToFileJob(){
-		return jobs.get("dbToCsvJob")
+		return jobs.get("dbToCsvJob").incrementer(new RunIdIncrementer())
 				.listener(dbCsvJobListener())
-				.start(readAndWrite())
+				//.start(readAndWrite())
+				.flow(readAndWrite()).end()
 				.build();
 	}
 	
 	/**
 	 * observe how a the <Processor is marked as a step Scope >beans are kept as step scope
+	 * Note Restartable is at a Step level
 	 * @return
 	 */
 	@Bean
 	public Step readAndWrite()
 	{
 		return stepBuilderFactory.get("readWriteInChunks")
-		                .<Claim,Claim>chunk(1) //important to be one in this case to commit after every line read
+		                .<Claim,Claim>chunk(10) //important to be one in this case to commit after every line read
 		                .reader(dbReader())
 						.processor(processor())
 						.writer(writer())
@@ -116,18 +128,7 @@ public class DbtoCsvBatch {
 	
 	@Bean
     public ItemWriter<Claim> writer() {
-    	//return new ClaimCSVWriter();  not using custom writer
-		
-		// use FlatFileItemWriter implementation
-		FlatFileItemWriter<Claim> writer = new FlatFileItemWriter<Claim>();
-    	writer.setResource(new ClassPathResource("ClaimExport.csv"));
-    	DelimitedLineAggregator<Claim> delLineAgg = new DelimitedLineAggregator<Claim>();
-    	delLineAgg.setDelimiter(",");
-    	BeanWrapperFieldExtractor<Claim> fieldExtractor = new BeanWrapperFieldExtractor<Claim>();
-    	fieldExtractor.setNames(new String[] {"id", "claimId","insuredId","amount","patientName"});
-    	delLineAgg.setFieldExtractor(fieldExtractor);
-    	writer.setLineAggregator(delLineAgg);
-        return writer;
+    	return new ClaimCSVWriter(); 
     }
 	
 	/**********************************************************************
