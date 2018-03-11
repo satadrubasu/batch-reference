@@ -21,17 +21,25 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
-@ComponentScan(basePackages={"com.home.batch.config"})
-@EnableAutoConfiguration
-@EnableBatchProcessing
+/**
+ * This class can be enabled for a standalone boot
+ * TODO : currently using the SpringBootWebApplication as the main class and 
+ *     commenting all other annotations for this class
+ * 
+ * @author satadrubasu
+ *
+ */
+//@ComponentScan(basePackages={"com.home.batch.config"})
+//@EnableAutoConfiguration
+//@EnableBatchProcessing
 public class Application {
 	
 	public static void main(String[] args) throws BeansException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException, JobParametersInvalidException, InterruptedException, IOException {
     	
-     ApplicationContext context =SpringApplication.run(Application.class, args);
+      // ApplicationContext context =SpringApplication.run(Application.class, args);
          	        		
-        // Enable this only for standalone - when using mvc mute this
-     //  	runStandalone(context);
+      // Enable this only for standalone - when using mvc mute this
+      //  	runStandalone(context);
 
         	System.exit(0);
         }
@@ -48,7 +56,6 @@ public class Application {
        	JobLauncher launcher = (JobLauncher)context.getBean(JobLauncher.class);
        	Job dbToCsvJob = (Job)context.getBean(Job.class);
        	
-        	// Setting the execution with jobParams
        	JobExecution jobExecution = null;
        	try{
        	    jobExecution = launcher.run(dbToCsvJob, jobParameters);

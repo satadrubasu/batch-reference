@@ -7,10 +7,10 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="claimsource")
+@Table(name="claims")
 public class Claim {
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id; // Autoincrement id of the table // exclude this from the comma seperated
 	private int claimId;
 	private int insuredId;

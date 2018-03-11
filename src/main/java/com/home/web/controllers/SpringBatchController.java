@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/home")
+@RequestMapping("/jobs")
 public class SpringBatchController  {
 	
 	@Autowired
@@ -38,7 +38,7 @@ public class SpringBatchController  {
 		return "index";// will return the index.html from resources/templates Thymeleaf
 	}
 
-	@RequestMapping("/job/dbToCSVJob")
+	@RequestMapping("/dbToCSVJob")
 	public String dbToCSVJob() throws Exception {
 	
 		String response = "Failed";
@@ -57,7 +57,7 @@ public class SpringBatchController  {
 		return response;
 	}
 	
-	@RequestMapping("/job/csvToDbJob")
+	@RequestMapping("/csvToDbJob")
 	public String csvToDbJob() throws Exception {
 	
 		String response = "Failed";
@@ -76,7 +76,7 @@ public class SpringBatchController  {
 		return response;
 	}
 	
-	@RequestMapping("/job/tradesJob")
+	@RequestMapping("/tradesJob")
 	public String tradesJob() throws Exception {
 	
 		String response = "Failed";

@@ -10,8 +10,10 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.builder.TaskletStepBuilder;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
@@ -30,15 +32,15 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
-import com.home.batch.listeners.DbToCsvJobListener;
+import com.home.batch.listeners.CsvToDbJobListener;
 import com.home.batch.model.Claim;
 import com.home.batch.processors.ClaimNoOpProcessor;
+import com.home.batch.tasklets.PreImportCleanupTasklet;
 
 /**
  * TODO: check the restartability / file not written
@@ -60,6 +62,16 @@ public class CsvtoDbJob {
 
 	@Autowired
 	private DataSource dataSource;
+	
+	@Autowired
+	@Qualifier("preImportCleanupTasklet")
+	private PreImportCleanupTasklet preImportCleanupTasklet;
+	
+	
+	@Autowired
+	@Qualifier("claimNoOpProcessor")
+	private ClaimNoOpProcessor claimNoOpProcessor;
+	
 
 	@Value("${server.port}")
 	private String serverPort;
@@ -88,22 +100,36 @@ public class CsvtoDbJob {
 	@Qualifier("csvToDbJob")
 	public Job csvToDbJob() {
 		return jobs.get("csvToDbJob").incrementer(new RunIdIncrementer())
-//				/.listener(csvJobListener())
-				// .start(readAndWrite())
-				.flow(step1()).end().build();
+				.listener(csvToDbJobListener())
+				.flow(cleanupTasklet())
+				.next(csvToDbStep())
+				.end().build();
 	}
 
+	
+	@Bean
+	@Qualifier("cleanupTasklet")
+	public Step cleanupTasklet()
+	{	StepBuilder stepBuilder = stepBuilderFactory.get("cleanupTaskletStep");
+	    TaskletStepBuilder tasklet = stepBuilder.tasklet(preImportCleanupTasklet);
+		return tasklet.build();
+	}
+	
+	
 	/**
 	 * observe how a the <Processor is marked as a step Scope >beans are kept as
 	 * step scope Note Restartable is at a Step level
+	 * with chunk =1 took 325 seconds to process the 6000 records
+	 * with chunk = 100 took 10 seconds to process the 6000 records
 	 * 
 	 * @return
 	 */
 	@Bean
-	public Step step1() {
-		return stepBuilderFactory.get("step1").<Claim, Claim>chunk(1)
+	@Qualifier("csvToDbStep")
+	public Step csvToDbStep() {
+		return stepBuilderFactory.get("csvToDbStep").<Claim, Claim>chunk(100)
 				.reader(csvReader())
-				//.processor(processor())
+				.processor(processor())
 				.writer(getWriter())
 				.build();
 	}
@@ -121,12 +147,9 @@ public class CsvtoDbJob {
 	@Bean
 	public ItemReader<Claim> csvReader() {
 
-		// we read a flat file that will be used to fill a Person object
 		FlatFileItemReader<Claim> reader = new FlatFileItemReader<Claim>();
-		// we pass as parameter the flat file directory
 		reader.setResource(new ClassPathResource("ClaimImport.csv"));
-		// we use a default line mapper to assign the content of each line to
-		// the Person object
+		// we use a default line mapper to assign the content of each line 
 		reader.setLineMapper(new DefaultLineMapper<Claim>() {
 			{
 				this.setLineTokenizer(new DelimitedLineTokenizer(",") {
@@ -134,8 +157,7 @@ public class CsvtoDbJob {
 						this.setNames(new String[] { "claimId", "insuredId", "amount", "patientName" });
 					}
 				});
-				this.setFieldSetMapper(new BeanWrapperFieldSetMapper<Claim>() { // field
-																				// mapper
+				this.setFieldSetMapper(new BeanWrapperFieldSetMapper<Claim>() { 
 					{
 						this.setTargetType(Claim.class);
 					}
@@ -144,17 +166,7 @@ public class CsvtoDbJob {
 		});
 		return reader;
 	}
-/*
-	@Bean
-    public DataSource getdataSource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(databaseDriver);
-        dataSource.setUrl(databaseUrl);
-        dataSource.setUsername(databaseUsername);
-        dataSource.setPassword(databasePassword);
-        dataSource.setDriverClassName(driverClassName);
-        return dataSource;
-    }*/
+
 	/**
 	 * Observe the StepScope for the processor
 	 * 
@@ -162,9 +174,9 @@ public class CsvtoDbJob {
 	 */
 	@Bean
 	public ItemProcessor<Claim, Claim> processor() {
-		return new ClaimNoOpProcessor();
+		return claimNoOpProcessor;
 	}
-
+	
 	@Bean
 	public ItemWriter<Claim> getWriter() {
 		JpaItemWriter<Claim> writer = new JpaItemWriter<Claim>();
@@ -197,8 +209,8 @@ public class CsvtoDbJob {
 	 **********************************************************************/
 
 	@Bean
-	public JobExecutionListener csvJobListener() {
-		return new DbToCsvJobListener();
+	public JobExecutionListener csvToDbJobListener() {
+		return new CsvToDbJobListener();
 	}
 	
 	/**
