@@ -28,6 +28,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -197,6 +199,19 @@ public class CsvtoDbJob {
 	@Bean
 	public JobExecutionListener csvJobListener() {
 		return new DbToCsvJobListener();
+	}
+	
+	/**
+	 * 
+	 * just and executor service / thread pool which can be injected to a Step having ( read/process/write )
+	 * @return
+	 */
+	@Bean
+	public TaskExecutor taskExecutor()
+	{
+		SimpleAsyncTaskExecutor asyncExec = new SimpleAsyncTaskExecutor("Thread_prefix");
+		asyncExec.setConcurrencyLimit(10);
+		return asyncExec;
 	}
 
 }

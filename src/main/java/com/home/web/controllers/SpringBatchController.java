@@ -29,6 +29,10 @@ public class SpringBatchController  {
 	@Qualifier("csvToDbJob")
 	private Job csvToDbJob;
 	
+	@Autowired
+	@Qualifier("tradesJob")
+	private Job tradesJob;
+	
 	@RequestMapping("/index")
 	public String testEndpoint() throws Exception {
 		return "index";// will return the index.html from resources/templates Thymeleaf
@@ -72,6 +76,24 @@ public class SpringBatchController  {
 		return response;
 	}
 	
+	@RequestMapping("/job/tradesJob")
+	public String tradesJob() throws Exception {
+	
+		String response = "Failed";
+		long startTime = System.currentTimeMillis();
+		JobParameters params = new JobParametersBuilder().addLong("time",
+				System.currentTimeMillis()).toJobParameters();
+		
+		try{
+			jobLauncher.run(tradesJob, params);
+			response = "Completed in time (seconds) :" + (System.currentTimeMillis() - startTime)/1000 ;
+		}catch(Exception e)
+		{
+			response = e.getMessage();
+		}
+		
+		return response;
+	}
 	
 	
 	
