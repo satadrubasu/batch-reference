@@ -1,4 +1,18 @@
-/target/
 .metadata
-bin/
+/bin
 .target
+.classpath
+.settings
+.project
+.DS_Store
+
+**/target/
+/target/
+*/target/*
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+
