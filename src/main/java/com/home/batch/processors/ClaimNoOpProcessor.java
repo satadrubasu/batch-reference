@@ -10,7 +10,7 @@ public class ClaimNoOpProcessor implements ItemProcessor<Claim,Claim>{
 	public Claim process(Claim claimItem) throws Exception {
 
 		
-		System.out.println("= ClaimNo Op Processor ==");
+		System.out.println("= ClaimNo Op Processor == "+ claimItem.getClaimId());
 		return claimItem;
 	}
 
