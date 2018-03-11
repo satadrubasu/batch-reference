@@ -1,0 +1,45 @@
+
+=-===========
+
+What to store in executioncontext - better approach for spring provided Cache 
+  where do we store partitino information
+=================CLARIFY/SEEK ==============
+
+Jobinstance increments only after successful executions ?
+Job Configured as restartable --> Jobinstance activated again may cause contention with a new exectuion ID
+
+What other types of jobLaunchers apart from SimpleJobLauncher
+
+
+-===============================
+Job Instance = Job + job Params
+eACH JOB INSTANCE CAN HAVE MULTIPLE EXECUTIONS , but only one can be running at a time.
+
+Processor - Filters in ItemProcessors
+
+Jobrepository - can be configured to not just dB but in memory as well.
+
+
+
+
+=========== TAKEAWAYS ==========
+https://github.com/eswaribala/
+Custom Implement JobOperators
+Step Skip / Skip Listeners
+Processors Filter
+
+
+Handson Flow
+=================
+job repo configs -- 
+context.xml --> load
+jobConfig.xml --> spring batch job config
+     use the inmemory repo for now
+
+
+   
+
+
+
+
+

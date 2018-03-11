@@ -1,0 +1,87 @@
+1. Spring INtegration:
+  -- in memory messaging
+  -- event oriented arch ( Duplex Socket communication )
+  -- loose coupling
+  --Integration logic
+  
+   
+2. Pull and Push adapters
+
+3. WS protocol for socket communication
+    HTTP is half duplex
+    Simplex and full deplex 
+    
+4. 
+   -- Message --> Message Endpoint --> Message Channel
+     
+     Message Channel connects 2 endpoints , so needs no broker. One Producer and Once Consumer.
+       Different Channel implementations:
+        a) point to point
+        b) Point to subscribers
+        
+=== POINT to POINT =======
+        
+5. Pollable Channels
+   a) may buffer its mesgs
+      - requires a queue to hold the msg / capacity etc
+   b) Waits for consumers to get the msg
+   c) typically a point to point channel
+
+6. Subscribable Channels
+  -- allows multiple channels to register its messages
+  -- no queueing mesg system
+  
+ 7.a  Direct Channel implements subscribable channels
+    mesg is sent to the sub though same receivers thread - Synchronus comm
+    producer blocked until a response received.
+    subscribers are passive ( push nature )
+    
+  7.b QueueChannel implements PollableChanel
+   One endpoint connected to the channel - no subscribers 
+   Active receivers - upon them to poll and fetch the msg
+   ( note we are still talking about point to point setup )
+     
+  7.c ExecutorChannel implements Subscribable
+      designates to another task   
+     
+  7.d Priority CHannel  on top of QueueChannel
+       based on Priority and not FIFO
+
+  7.e Rendezvous Channel implements Pollable Channel
+      Similar to the queue but with 0 capacity
+      producer will block until the receiver consumes and empties the message
+      
+
+ ===========Publisher Subscriber Channel========
+  -- channel can have several enpoitns subscribed to it
+  -- implements Subscriber Channel
+ [ APIGEE tool ] 
+  Temporary Channels
+    - Connection Pools
+    
+===================================================
+
+Message Endpoints / adapter
+
+Spring MVC  Http Req --> URL Pattern ( Router ) --> Controller
+Sprint Integration : Message --> Channel --> Endpoint
+
+ 1. Channel Adapter : connects app to an external system ( unidirectional )
+     inbound / outbound
+ 2. Gateway :  (Is Bidirectional)   
+ 
+   INBOUND---> [-------------------Channel-------] ----> OUTBOUND
+   ServiceActivator tied with Inbound ( trgger )
+   
+   
+   
+   ============ SCALING ==============
+   
+   1. adding a TaskExecutor just ensures a thread pool
+   
+   
+   
+ 
+ 
+            
+    

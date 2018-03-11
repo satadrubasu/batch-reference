@@ -1,0 +1,59 @@
+
+JobParameters :
+  #{jobParameters['id']}
+  
+  
+2.  Paging ItemReader
+
+  Paging is not the record count but the page / RAM memory space . Depending on data of tables this might mean diff record counts fetched
+
+  <bean id="itemReader" class="org.springframework.batch.item.database.JdbcPagingItemReader">
+        <property name="dataSource" ref="dataSource" />
+        <property name="queryProvider">
+            <bean class="org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean">
+                <property name="dataSource" ref="dataSource" />
+                <property name="databaseType" value="HSQL" />
+                <property name="selectClause" value="select ID, NAME" />
+                <property name="fromClause" value="from TEST" /> 
+                <property name="whereClause">
+                    <!-- Why CDATA? 
+                    
+                         because < etc. is not allowed for xml values
+                         when you use &lt; xml parser will work, but
+                         now the sql won't because of the & spring assumes
+                         a placeholder, see
+                         - AbstractSqlPagingQueryProvider.init(...)
+                         - JdbcParameterUtils.countParameterPlaceholders(...)
+                         
+                         -->
+                    <value>
+                        <![CDATA[
+                            where NAME <> 'foo'
+                        ]]>
+                    </value>
+                </property> 
+                <property name="sortKey" value="ID" />
+            </bean>
+        </property>
+        <property name="pageSize" value="2" />
+        <property name="rowMapper" ref="rowMapper" />
+    </bean>
+    
+    
+    3.  Line Mappers --> Line Tokenizer-->FieldSet-->FieldSetMapper  ( More like a read )
+       DelimitedLineTokenizer / FixedLength / PatternMatchingCompositeLine
+       String to FieldSetMapper
+       
+       
+    4. Line Aggregator --> More like a write side
+        FieldSetMapper to String. Note there is no newline by default
+        
+         PassThroughLine Aggregator ( Assumes object is already in String )
+          input item has a toString() hence string to string operation and has a \n at end
+          
+  === Use case : Reader( tokenizer) convert to obg --> pass to processor -- appl filter/validators at obj level --> pass to writer( aggregator )
+  
+  
+  thymeleaf -- resources/templates / html support        
+          
+          
