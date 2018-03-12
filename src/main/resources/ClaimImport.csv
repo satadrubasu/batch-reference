@@ -1,12 +1,12 @@
 1000001,301,50,patientName000001
 1000002,301,50,patientName000002
-1000003,301,50,patientName000003
-1000004,301,50,patientName000004
-1000005,301,50,patientName000005
-1000006,301,50,patientName000006
-1000007,301,50,patientName000007
-1000008,301,50,patientName000008
-1000009,301,50,patientName000009
+1000003,301,50,patientName000003,###encounterfault for Skip
+1000004,301,50,patientName000004,###encounterfault for Skip
+1000005,301,50,patientName000005,###encounterfault for Skip
+1000006,301,50,patientName000006,###encounterfault for Skip
+1000007,301,50,patientName000007,###encounterfault for Skip
+1000008,301,50,patientName000008,###encounterfault for Skip
+1000009,301,50,patientName000009,###encounterfault for Skip
 1000010,301,50,patientName000010
 1000011,301,50,patientName000011
 1000012,301,50,patientName000012

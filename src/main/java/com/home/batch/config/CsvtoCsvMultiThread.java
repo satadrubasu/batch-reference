@@ -129,6 +129,7 @@ public class CsvtoCsvMultiThread {
 				.reader(csvTradesReader())
 				.processor(stockProcessor())  // converts Stock to StockVolume
 				.writer(csvTradesWriter())
+				.taskExecutor(tradesTaskExecutor())
 				.build();
 	}
 
@@ -251,9 +252,10 @@ public class CsvtoCsvMultiThread {
 	 * @return
 	 */
 	@Bean
-	public TaskExecutor taskExecutor()
+	@Qualifier("tradesTaskExecutor")
+	public TaskExecutor tradesTaskExecutor()
 	{
-		SimpleAsyncTaskExecutor asyncExec = new SimpleAsyncTaskExecutor("Thread_prefix");
+		SimpleAsyncTaskExecutor asyncExec = new SimpleAsyncTaskExecutor("tradesThread_");
 		asyncExec.setConcurrencyLimit(10);
 		return asyncExec;
 	}

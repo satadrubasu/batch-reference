@@ -1,0 +1,31 @@
+Skippable
+============= 
+Fault Tolerance = Skippable / Retry / 
+
+reader-->faultTolerant-->skipPolicy
+  --> processor
+https://blog.codecentric.de/en/2012/03/transactions-in-spring-batch-part-3-skip-and-retry/
+
+
+===== Parallel processing =====
+1. Multithread steps - taskexecutor ( backgound threadpool )
+1. Parallel Steps [ just parallel and no partition ] [ Java ForkJoinPool.class.parallelism ]
+
+parallel is diff from multi thread -- parallel is multiple tasks divided ( may or may not be the same task)
+ Eash task can be a task executor and hence a threadpool in itself ( multi thread )
+
+2. GRID Architecture -- Load Balancers ( Master - Slave )
+    Master is going to divide the work
+
+3. Remote Chunking { work involved in a chunk ( consider Read/Process/Write steps ) are available with remote systems integrated over a middleware arch )
+
+
+
+#1. Parallel Jobs : Job is SPLIT + step + split etc ( where each flow can have sequential steps within )
+   <job>  
+      <split id="split1" next="Step4">
+        <flow id = parallel_1/>
+        <flow id = parallel_2/>
+        <flow id = parallel_3/>   
+       </Split>
+       <Step id="Step4"/>   

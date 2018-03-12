@@ -18,6 +18,5 @@ public class SpringBootWebApplication {
 	public static void main(String[] args) throws BeansException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException, JobParametersInvalidException, InterruptedException, IOException {
      SpringApplication.run(SpringBootWebApplication.class, args);
 	}
-
 	        		
 }

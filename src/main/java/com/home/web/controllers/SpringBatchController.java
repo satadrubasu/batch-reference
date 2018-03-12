@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.home.batch.service.CentralService;
+
 @RestController
 @RequestMapping("/jobs")
 public class SpringBatchController  {
@@ -32,6 +34,10 @@ public class SpringBatchController  {
 	@Autowired
 	@Qualifier("tradesJob")
 	private Job tradesJob;
+	
+	@Autowired
+	private CentralService centralService;
+	
 	
 	@RequestMapping("/index")
 	public String testEndpoint() throws Exception {
@@ -95,6 +101,21 @@ public class SpringBatchController  {
 		return response;
 	}
 	
+	
+	/**
+	 * 
+	 *  ENTER INTO THE CENTRAL SERVICE LAYER
+	 * 
+	 */
+	
+	
+	@RequestMapping("/fetchJobNames")
+	public String fetchJobNames() throws Exception {
+	
+		String response = "NO-DATA";
+		response = centralService.getJobs();
+		return response;
+	}
 	
 	
 

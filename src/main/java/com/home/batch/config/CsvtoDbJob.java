@@ -10,7 +10,9 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.launch.support.SimpleJobOperator;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.builder.TaskletStepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -39,6 +41,8 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
 import com.home.batch.listeners.CsvToDbJobListener;
 import com.home.batch.model.Claim;
+import com.home.batch.policies.GenericRetryPolicy;
+import com.home.batch.policies.GenericSkipPolicy;
 import com.home.batch.processors.ClaimNoOpProcessor;
 import com.home.batch.tasklets.PreImportCleanupTasklet;
 
@@ -72,7 +76,14 @@ public class CsvtoDbJob {
 	@Qualifier("claimNoOpProcessor")
 	private ClaimNoOpProcessor claimNoOpProcessor;
 	
-
+	@Autowired
+	@Qualifier("genericSkipPolicy")
+	private GenericSkipPolicy genericSkipPolicy;
+	
+	@Autowired
+	@Qualifier("genericRetryPolicy")
+	private GenericRetryPolicy genericRetryPolicy;
+	
 	@Value("${server.port}")
 	private String serverPort;
 
@@ -127,10 +138,12 @@ public class CsvtoDbJob {
 	@Bean
 	@Qualifier("csvToDbStep")
 	public Step csvToDbStep() {
-		return stepBuilderFactory.get("csvToDbStep").<Claim, Claim>chunk(100)
-				.reader(csvReader())
-				.processor(processor())
+		return stepBuilderFactory.get("csvToDbStep").<Claim, Claim>chunk(10)
+				.reader(csvReader()).faultTolerant().skipLimit(10).skipPolicy(genericSkipPolicy)
+				//.retryLimit(2).retryPolicy(genericRetryPolicy)
+				.processor(processor()).faultTolerant().skipLimit(20).skipPolicy(genericSkipPolicy)
 				.writer(getWriter())
+				.taskExecutor(csvDbThreadExec()) // not making too much of a difference
 				.build();
 	}
 
@@ -219,9 +232,10 @@ public class CsvtoDbJob {
 	 * @return
 	 */
 	@Bean
-	public TaskExecutor taskExecutor()
+	@Qualifier("csvDbThreadExec")
+	public TaskExecutor csvDbThreadExec()
 	{
-		SimpleAsyncTaskExecutor asyncExec = new SimpleAsyncTaskExecutor("Thread_prefix");
+		SimpleAsyncTaskExecutor asyncExec = new SimpleAsyncTaskExecutor("csvDbThread_");
 		asyncExec.setConcurrencyLimit(10);
 		return asyncExec;
 	}
